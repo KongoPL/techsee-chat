@@ -31,11 +31,11 @@ class Chat {
 	{
 		if(this.participantExists(participant))
 		{
-			const message = new Message(participant, message);
+			const messageEntity = new Message(participant, message);
 
-			this.#messages.push(message);
+			this.#messages.push(messageEntity);
 
-			return message;
+			return messageEntity;
 		}
 
 		return false;
@@ -135,10 +135,10 @@ class Message {
 	}
 
 	
-	toExternalObject()
+	toObject()
 	{
 		return {
-			participant: this.participant.name,
+			participant: this.participant.toObject(),
 			message: this.message,
 			createdAt: this.createdAt
 		};
