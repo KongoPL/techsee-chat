@@ -2,7 +2,8 @@ import socketIOClient from 'socket.io-client';
 import React, {useState} from 'react';
 import './App.css';
 
-class App extends React.Component {
+class App extends React.Component
+{
     socket;
 
     constructor()
@@ -19,16 +20,23 @@ class App extends React.Component {
     {
         this.socket = socketIOClient("http://127.0.0.1:1112");
 
+        this.socket.on('connect', () => {
+            this.socket.emit('join-chat');
+            this.socket.emit('messages-history');
+        });
+
         this.socket.on('set-participant-data', (participant) => this.setState({participant}));
 
-        this.socket.on('message', (message) => {
+        this.socket.on('message', (message) =>
+        {
             this.setState(state => ({
                 ...state,
                 messages: [...state.messages, message]
             }));
         });
 
-        this.socket.on('error', (data) => {
+        this.socket.on('error', (data) =>
+        {
             const errorsList = {
                 1: 'Internal server error occurred'
             };
@@ -36,9 +44,20 @@ class App extends React.Component {
             alert(errorsList[data.errorCode]);
         });
 
-        this.socket.on('messages-history', (messages) => this.setState({messages}))
-        this.socket.on('participant-joins', () => {})
-        this.socket.on('participant-leaves', () => {})
+        this.socket.on('messages-history', (messages) => this.setState({ messages }));
+        this.socket.on('participant-joins', (participant) =>
+        {
+            this.sendSystemMessage(`${participant.name} joins the chat...`);
+        })
+        this.socket.on('participant-leaves', (participant) =>
+        {
+            this.sendSystemMessage(`${participant.name} leaves the chat...`);
+        });
+    }
+
+    componentWillUnmount()
+    {
+        this.socket.disconnect();
     }
 
 
@@ -50,7 +69,7 @@ class App extends React.Component {
                     {this.state.messages.map(m => <Message key={m.createdAt} {...m} />)}
                 </div>
                 <div className="message-form">
-                    <MessageForm onMessageSend={this.sendMessage.bind(this)} />
+                    <MessageForm onMessageSend={this.sendMessage.bind(this)}/>
                 </div>
             </div>
         );
@@ -59,6 +78,23 @@ class App extends React.Component {
     sendMessage(message)
     {
         this.socket.emit('message', message);
+    }
+
+    sendSystemMessage(message)
+    {
+        const messageEntity = {
+            participant: {
+                id: '',
+                name: 'System'
+            },
+            message: message,
+            createdAt: (new Date()).getTime()
+        }
+
+        this.setState(state => ({
+            ...state,
+            messages: [...state.messages, messageEntity]
+        }));
     }
 }
 
