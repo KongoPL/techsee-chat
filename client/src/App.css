@@ -15,47 +15,15 @@
     overflow-y: auto;
 }
 
-.app .messages-list .message {
-    display: grid;
-
-}
-
-.app .messages-list .message:not(:last-child) {
+.app .messages-list .app-message:not(:last-child) {
     margin-bottom: 5px;
 }
 
 
-.app .message-form {
+.app .send-form {
     height: 35px;
-
-    border-top: 1px solid black;
-}
-
-.app .message-form form {
-    height: 100%;
 
     padding: 2px;
 
-    display: block;
-}
-
-.app .message-form input.message {
-    width: calc(100% - 50px);
-    height: calc(100%);
-
-    border-width: 0 0 2px;
-    border-color: gray;
-
-    transition: 0.25s border-color;
-    will-change: border-color;
-}
-
-.app .message-form input.message:focus {
-    outline: none;
-    border-color: cornflowerblue;
-}
-
-.app .message-form button {
-    width: 50px;
-    height: 100%;;
+    border-top: 1px solid black;
 }

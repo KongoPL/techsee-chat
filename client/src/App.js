@@ -1,10 +1,17 @@
-import socketIOClient from 'socket.io-client';
 import React, {useState} from 'react';
+import SocketIOChatDriver from "./SocketIOChatDriver";
+import MessageForm from "./MessageForm";
+import Message from "./Message";
+
 import './App.css';
 
 class App extends React.Component
 {
-    socket;
+    /**
+     * @type {SocketIOChatDriver}
+     */
+    api;
+    chatBottomElement;
 
     constructor()
     {
@@ -18,46 +25,30 @@ class App extends React.Component
 
     componentDidMount()
     {
-        this.socket = socketIOClient("http://127.0.0.1:1112");
+        this.api = new SocketIOChatDriver("http://127.0.0.1:1112");
 
-        this.socket.on('connect', () => {
-            this.socket.emit('join-chat');
-            this.socket.emit('messages-history');
-        });
-
-        this.socket.on('set-participant-data', (participant) => this.setState({participant}));
-
-        this.socket.on('message', (message) =>
-        {
+        this.api.onMessage.subscribe((message) => {
             this.setState(state => ({
                 ...state,
                 messages: [...state.messages, message]
             }));
         });
 
-        this.socket.on('error', (data) =>
-        {
-            const errorsList = {
-                1: 'Internal server error occurred'
-            };
+        this.api.onMessagesHistory.subscribe(messages => this.setState({ messages }))
 
-            alert(errorsList[data.errorCode]);
-        });
+       this.api.onError.subscribe((errorCode, message) => {
+           alert(`${message} (#${errorCode})`);
+       });
+    }
 
-        this.socket.on('messages-history', (messages) => this.setState({ messages }));
-        this.socket.on('participant-joins', (participant) =>
-        {
-            this.sendSystemMessage(`${participant.name} joins the chat...`);
-        })
-        this.socket.on('participant-leaves', (participant) =>
-        {
-            this.sendSystemMessage(`${participant.name} leaves the chat...`);
-        });
+    componentDidUpdate(prevProps, prevState, snapshot)
+    {
+        this.chatBottomElement.scrollIntoView({ behavior: "smooth" });
     }
 
     componentWillUnmount()
     {
-        this.socket.disconnect();
+        this.api.destroy();
     }
 
 
@@ -67,8 +58,9 @@ class App extends React.Component
             <div className="app">
                 <div className="messages-list">
                     {this.state.messages.map(m => <Message key={m.createdAt} {...m} />)}
+                    <div className="chat-bottom" ref={element => { this.chatBottomElement = element; }} />
                 </div>
-                <div className="message-form">
+                <div className="send-form">
                     <MessageForm onMessageSend={this.sendMessage.bind(this)}/>
                 </div>
             </div>
@@ -77,55 +69,10 @@ class App extends React.Component
 
     sendMessage(message)
     {
-        this.socket.emit('message', message);
-    }
+        if(message.replace(/^[\s]+$/, '') === '')
+            return;
 
-    sendSystemMessage(message)
-    {
-        const messageEntity = {
-            participant: {
-                id: '',
-                name: 'System'
-            },
-            message: message,
-            createdAt: (new Date()).getTime()
-        }
-
-        this.setState(state => ({
-            ...state,
-            messages: [...state.messages, messageEntity]
-        }));
-    }
-}
-
-function Message({participant, message})
-{
-    return <div className="message">
-        <b>{participant.name}:</b><br/>
-        {message}
-    </div>
-}
-
-function MessageForm({onMessageSend})
-{
-    const [message, setMessage] = useState('');
-
-    return <form onSubmit={sendMessage}>
-        <input type="text" className="message" value={message} onChange={handleInputChange} />
-        <button type="submit">Send</button>
-    </form>;
-
-    function handleInputChange(event)
-    {
-        setMessage(event.target.value);
-    }
-
-    function sendMessage(event)
-    {
-        onMessageSend(message);
-        setMessage('');
-
-        event.preventDefault();
+        this.api.sendMessage(message);
     }
 }
 
