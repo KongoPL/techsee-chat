@@ -23,6 +23,7 @@ class App extends React.Component
         };
     }
 
+
     componentDidMount()
     {
         this.api = new SocketIOChatDriver("http://127.0.0.1:1112");
@@ -41,10 +42,12 @@ class App extends React.Component
        });
     }
 
+
     componentDidUpdate(prevProps, prevState, snapshot)
     {
         this.chatBottomElement.scrollIntoView({ behavior: "smooth" });
     }
+
 
     componentWillUnmount()
     {
@@ -66,6 +69,7 @@ class App extends React.Component
             </div>
         );
     }
+
 
     sendMessage(message)
     {

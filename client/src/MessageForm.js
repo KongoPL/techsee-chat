@@ -11,10 +11,12 @@ export default function MessageForm({onMessageSend})
 		<button type="submit">Send</button>
 	</form>;
 
+
 	function handleInputChange(event)
 	{
 		setMessage(event.target.value);
 	}
+
 
 	function sendMessage(event)
 	{

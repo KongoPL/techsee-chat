@@ -66,11 +66,13 @@ export default class SocketIOChatDriver {
 		this.participantData = data;
 	}
 
+
 	_onMessage(messageData)
 	{
 		this.messages.push(messageData);
 		this.onMessage.emit(this._cloneVariable(messageData));
 	}
+
 
 	_onMessagesHistory(messagesHistory)
 	{
@@ -78,15 +80,18 @@ export default class SocketIOChatDriver {
 		this.onMessagesHistory.emit(this._cloneVariable(messagesHistory));
 	}
 
+
 	// _onParticipantJoins(participant)
 	// {
 	// 	this.sendLocalMessage(`${participant.name} joins the chat...`);
 	// }
 	//
+	//
 	// _onParticipantLeaves(participant)
 	// {
 	// 	this.sendLocalMessage(`${participant.name} leaves the chat...`);
 	// }
+
 
 	_onError(data)
 	{
@@ -99,6 +104,7 @@ export default class SocketIOChatDriver {
 
 		this.onError.emit(data.errorCode, message);
 	}
+
 
 	_cloneVariable(variable)
 	{
