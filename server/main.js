@@ -9,8 +9,10 @@ const socketIOServer = require('socket.io')(1112, {
 const chatInstance = new Chat();
 
 socketIOServer.on('connection', (client) => {
+	let participant;
+
 	client.on('join-chat', () => {
-		const participant = chatInstance.join();
+		participant = chatInstance.join();
 
 		client.emit('set-participant-data', participant.toObject());
 		socketIOServer.emit('participant-joins', participant.toObject());
